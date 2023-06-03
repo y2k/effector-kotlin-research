@@ -35,6 +35,7 @@ val storeTemperature = Store.create("")
     .on(searchClicked) { _, _ -> "Loading..." }
     .on(searchFx.done) { _, text -> Json.decodeFromString<Response>(text).temperature.toString() }
     .on(searchFx.fail) { _, _ -> "Error" }
+    .reset(textChanged)
 
 fun main() {
     sample(
