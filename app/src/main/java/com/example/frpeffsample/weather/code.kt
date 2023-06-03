@@ -8,12 +8,12 @@ import com.example.frpeffsample.effector.sample
 
 val textChanged = Event.create<String>()
 
-val textStore = Store.create("")
+val storeCityText = Store.create("")
     .on(textChanged) { _, text -> text }
 
 val searchClicked = Event.create<Unit>()
 
-val weatherStore = Store.create("")
+val storeTemperature = Store.create("")
 
 private val searchFx = Effect.create<String, String> {
     TODO("")
@@ -22,12 +22,12 @@ private val searchFx = Effect.create<String, String> {
 fun main() {
     sample(
         clock = searchClicked,
-        source = textStore,
+        source = storeCityText,
         target = searchFx,
     )
     sample(
         clock = searchFx.done,
-        source = textStore,
-        target = weatherStore,
+        source = storeCityText,
+        target = storeTemperature,
     )
 }
