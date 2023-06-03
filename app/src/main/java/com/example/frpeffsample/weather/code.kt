@@ -7,6 +7,8 @@ import com.example.frpeffsample.effector.on
 import com.example.frpeffsample.effector.sample
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.json.Json
 import java.net.URL
 
 val textChanged = Event.create<String>()
@@ -24,7 +26,7 @@ private val searchFx = Effect.create<String, String> {
 }
 
 val storeTemperature = Store.create("...")
-    .on(searchFx.done) { _, text -> text }
+    .on(searchFx.done) { _, text -> Json.decodeFromString<Response>(text).temperature.toString() }
 
 fun main() {
     sample(
@@ -33,3 +35,6 @@ fun main() {
         target = searchFx,
     )
 }
+
+@Serializable
+data class Response(val city: String, val temperature: Int)
