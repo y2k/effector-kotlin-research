@@ -5,6 +5,9 @@ import com.example.frpeffsample.effector.Event
 import com.example.frpeffsample.effector.Store
 import com.example.frpeffsample.effector.on
 import com.example.frpeffsample.effector.sample
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
+import java.net.URL
 
 val textChanged = Event.create<String>()
 
@@ -13,21 +16,20 @@ val storeCityText = Store.create("")
 
 val searchClicked = Event.create<Unit>()
 
-val storeTemperature = Store.create("")
-
 private val searchFx = Effect.create<String, String> {
-    TODO("")
+    withContext(Dispatchers.IO) {
+        URL("https://raw.githubusercontent.com/y2k/effector-kotlin-research/master/mock-weather-response.json")
+            .readText()
+    }
 }
+
+val storeTemperature = Store.create("...")
+    .on(searchFx.done) { _, text -> text }
 
 fun main() {
     sample(
         clock = searchClicked,
         source = storeCityText,
         target = searchFx,
-    )
-    sample(
-        clock = searchFx.done,
-        source = storeCityText,
-        target = storeTemperature,
     )
 }

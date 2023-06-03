@@ -89,7 +89,7 @@ interface Effect<T, R> : Target<T> {
 
                 @OptIn(DelicateCoroutinesApi::class)
                 override fun run(param: T) {
-                    GlobalScope.launch {
+                    GlobalScope.launch(Dispatchers.Main.immediate) {
                         try {
                             done(f(param))
                         } catch (e: Exception) {
