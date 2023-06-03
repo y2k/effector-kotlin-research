@@ -3,6 +3,7 @@ package com.example.frpeffsample.effector
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Dispatchers.Unconfined
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -40,7 +41,7 @@ fun <T, R> Store<T>.map(f: (T) -> R): Store<R> {
 
     currentStore.state
         .onEach { store.run(f(it)) }
-        .launchIn(CoroutineScope(Dispatchers.Main.immediate))
+        .launchIn(CoroutineScope(Unconfined))
 
     return store
 }
@@ -124,7 +125,7 @@ fun <TS, TC, TT> sample(
             val result = fn(srcValue, clockValue)
             target.run(result)
         }
-        .launchIn(CoroutineScope(Dispatchers.Main.immediate))
+        .launchIn(CoroutineScope(Unconfined))
 }
 
 fun <T, TE> Store<T>.on(event: Event<TE>, f: (T, TE) -> T): Store<T> {

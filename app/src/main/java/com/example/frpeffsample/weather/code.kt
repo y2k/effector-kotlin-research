@@ -23,7 +23,7 @@ val storeCityText = Store.create("")
 
 val storeGetTempEnabled = storeCityText.map { it.length >= 3 }
 
-private val searchFx = Effect.create<String, String> { city ->
+internal val searchFx = Effect.create<String, String> { city ->
     withContext(Dispatchers.IO) {
         println("Load weather for city: $city")
         URL("https://raw.githubusercontent.com/y2k/effector-kotlin-research/master/mock-weather-response.json")
