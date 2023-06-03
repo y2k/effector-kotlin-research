@@ -31,8 +31,10 @@ private val searchFx = Effect.create<String, String> { city ->
     }
 }
 
-val storeTemperature = Store.create("...")
+val storeTemperature = Store.create("")
+    .on(searchClicked) { _, _ -> "Loading..." }
     .on(searchFx.done) { _, text -> Json.decodeFromString<Response>(text).temperature.toString() }
+    .on(searchFx.fail) { _, _ -> "Error" }
 
 fun main() {
     sample(
