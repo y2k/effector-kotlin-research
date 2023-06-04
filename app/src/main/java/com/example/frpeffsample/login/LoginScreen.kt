@@ -10,6 +10,7 @@ import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import com.example.frpeffsample.effector.compose.get
 
@@ -34,8 +35,13 @@ fun LoginScreen() {
             value = LoginDomain.storePasswordText.get(),
             onValueChange = { LoginDomain.passwordTextChanged(it) }
         )
+        Text(
+            modifier = Modifier.fillMaxWidth(),
+            color = Color.Red,
+            text = LoginDomain.storeError.get()
+        )
         Button(
-            enabled = LoginDomain.loginEnabled.get(),
+            enabled = LoginDomain.storeLoginEnabled.get(),
             onClick = { LoginDomain.loginClicked(Unit) }
         ) {
             Text(text = if (LoginDomain.storeLoginInProgress.get()) "Logging in..." else "Login")

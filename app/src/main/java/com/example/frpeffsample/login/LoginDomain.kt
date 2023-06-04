@@ -22,11 +22,15 @@ object LoginDomain {
 
     val loginClicked = Event.create<Unit>()
 
+    val storeError = Store.create("")
+        .on(LoginEffects.loginFx.fail) { _, error -> error.message ?: "" }
+        .on(loginClicked) { _, _ -> "" }
+
     val storeLoginInProgress = Store.create(false)
         .on(loginClicked) { _, _ -> true }
         .on(LoginEffects.loginFx.finally) { _, _ -> false }
 
-    val loginEnabled = combine(
+    val storeLoginEnabled = combine(
         storeLoginText,
         storePasswordText,
         storeLoginInProgress
@@ -34,15 +38,10 @@ object LoginDomain {
         login.isNotBlank() && password.isNotBlank() && !inProgress
     }
 
-    private val loginWithPassword = combine(
-        storeLoginText,
-        storePasswordText
-    ) { login, password -> login to password }
-
     init {
         sample(
             clock = loginClicked,
-            source = loginWithPassword,
+            source = combine(storeLoginText, storePasswordText, ::Pair),
             target = LoginEffects.loginFx,
         )
     }
