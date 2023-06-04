@@ -12,6 +12,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.example.frpeffsample.login.LoginScreen
 import com.example.frpeffsample.todo.compose.TodoList
 import com.example.frpeffsample.ui.theme.FrpEffSampleTheme
 import com.example.frpeffsample.weather.compose.WeatherList
@@ -27,6 +28,7 @@ class MainActivity : ComponentActivity() {
                     color = MaterialTheme.colorScheme.background
                 ) {
                     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                        LoginScreen()
                         WeatherList()
                         TodoList()
                     }

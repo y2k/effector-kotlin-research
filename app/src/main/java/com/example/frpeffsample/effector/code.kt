@@ -9,9 +9,11 @@ import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.flow.combine as combineFlow
 
 private interface InnerStore<T> : Store<T>, InnerTarget<T> {
     val initValueProp: T
@@ -84,6 +86,7 @@ interface Effect<T, R> : Target<T> {
 
     val done: Event<R>
     val fail: Event<Exception>
+    val finally: Event<Unit>
 
     companion object {
         fun <T, R> create(f: suspend (T) -> R): Effect<T, R> =
@@ -93,6 +96,7 @@ interface Effect<T, R> : Target<T> {
 
                 override val done = Event.create<R>()
                 override val fail = Event.create<Exception>()
+                override val finally = Event.create<Unit>()
 
                 @OptIn(DelicateCoroutinesApi::class)
                 override fun run(param: T) {
@@ -109,6 +113,8 @@ interface Effect<T, R> : Target<T> {
                             done(f2(param))
                         } catch (e: Exception) {
                             fail(e)
+                        } finally {
+                            finally(Unit)
                         }
                     }
                 }
@@ -165,6 +171,44 @@ fun <T> Store<T>.reset(event: Event<*>): Store<T> {
         },
     )
     return this
+}
+
+@Suppress("NAME_SHADOWING")
+fun <T1, T2, R> combine(store1: Store<T1>, store2: Store<T2>, f: (T1, T2) -> R): Store<R> {
+    val store1 = store1 as InnerStore<T1>
+    val store2 = store2 as InnerStore<T2>
+
+    val store = Store.create(
+        f(store1.state.value, store2.state.value)
+    ) as InnerStore<R>
+
+    store1.state
+        .combine(store2.state) { t1, t2 -> f(t1, t2) }
+        .onEach { store.run(it) }
+        .launchIn(CoroutineScope(Unconfined))
+
+    return store
+}
+
+@Suppress("NAME_SHADOWING")
+fun <T1, T2, T3, R> combine(store1: Store<T1>, store2: Store<T2>, store3: Store<T3>, f: (T1, T2, T3) -> R): Store<R> {
+    val store1 = store1 as InnerStore<T1>
+    val store2 = store2 as InnerStore<T2>
+    val store3 = store3 as InnerStore<T3>
+
+    val store = Store.create(
+        f(store1.state.value, store2.state.value, store3.state.value)
+    ) as InnerStore<R>
+
+    combineFlow(
+        store1.state,
+        store2.state,
+        store3.state,
+    ) { t1, t2, t3 -> f(t1, t2, t3) }
+        .onEach { store.run(it) }
+        .launchIn(CoroutineScope(Unconfined))
+
+    return store
 }
 
 // region Scope

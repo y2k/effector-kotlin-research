@@ -25,8 +25,10 @@ val storeGetTempEnabled = storeCityText.map { it.length >= 3 }
 internal val apiSearchFx = Effect.create<String, String> { city ->
     withContext(Dispatchers.IO) {
         println("Load weather for city: $city")
-        URL("https://raw.githubusercontent.com/y2k/effector-kotlin-research/master/mock-weather-response.json")
-            .readText()
+        val json =
+            URL("https://raw.githubusercontent.com/y2k/effector-kotlin-research/master/mock-weather-response.json")
+                .readText()
+        json.replace("__CITY__", city)
     }
 }
 
