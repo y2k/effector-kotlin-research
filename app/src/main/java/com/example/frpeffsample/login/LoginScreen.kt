@@ -36,7 +36,9 @@ fun LoginScreen() {
             onValueChange = { LoginDomain.passwordTextChanged(it) }
         )
         Text(
-            modifier = Modifier.fillMaxWidth(),
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(vertical = 8.dp),
             color = Color.Red,
             text = LoginDomain.storeError.get()
         )

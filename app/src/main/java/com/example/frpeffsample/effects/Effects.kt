@@ -12,7 +12,7 @@ object Effects {
     fun loginFx() = Effect.create<Pair<String, String>, Unit> { (user, pass) ->
         delay(1.seconds)
         if (user != "user" || pass != "pass")
-            throw Exception("Login failed")
+            throw Exception("Incorrect user or password")
     }
 
     fun apiSearchFx() = Effect.create<String, String> { city ->

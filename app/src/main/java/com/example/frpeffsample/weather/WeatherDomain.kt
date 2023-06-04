@@ -14,17 +14,9 @@ object WeatherDomain {
 
     val apiSearchFx = Effects.apiSearchFx()
 
-    val textChanged = Event.create<String>()
-
     val searchClicked = Event.create<Unit>()
 
-    val storeCityText = Store.create("")
-        .on(textChanged) { _, text -> text }
-
-    val storeGetTempEnabled = combine(
-        storeCityText,
-        apiSearchFx.pending
-    ) { text, inProgress -> text.length >= 3 && !inProgress }
+    val textChanged = Event.create<String>()
 
     val storeTemperature = Store.create("")
         .on(searchClicked) { _, _ -> "Loading..." }
@@ -34,6 +26,14 @@ object WeatherDomain {
         }
         .on(apiSearchFx.fail) { _, _ -> "Error" }
         .reset(textChanged)
+
+    val storeCityText = Store.create("")
+        .on(textChanged) { _, text -> text }
+
+    val storeGetTempEnabled = combine(
+        storeCityText,
+        apiSearchFx.pending
+    ) { text, inProgress -> text.length >= 3 && !inProgress }
 
     init {
         sample(
