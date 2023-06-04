@@ -33,6 +33,8 @@ class TodoListTest {
     fun test_itemDeleted() {
         val scope = fork(values = listOf(Scope.store(storeItems, listOf("item1"))))
 
+        Assert.assertEquals(listOf("item1"), scope.getState(storeItems))
+
         allSettled(itemDeleted, 0, scope)
 
         Assert.assertEquals(emptyList<String>(), scope.getState(storeItems))

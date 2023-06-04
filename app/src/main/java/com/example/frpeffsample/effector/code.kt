@@ -172,8 +172,22 @@ fun <T> Store<T>.reset(event: Event<*>): Store<T> {
 private class InnerScope(
     val values: List<MockStore> = emptyList(),
     val handlers: Map<Effect<*, *>, suspend (Any) -> Any>,
+    private var intiaited: Boolean = false,
 ) : Scope {
+
+    fun initialize() {
+        if (intiaited) return
+        intiaited = true
+
+        @Suppress("NAME_SHADOWING")
+        values.forEach { store ->
+            val store = store as InnerMockStore
+            store.originStore.run(store.value)
+        }
+    }
+
     override fun <T> getState(store: Store<T>): T {
+        initialize()
         return (store as InnerStore).state.value
     }
 }
@@ -214,24 +228,6 @@ private interface InnerMockStore : MockStore {
 interface MockEffect
 interface MockStore
 
-fun <T> store(store: Store<T>, initValue: T): MockStore =
-    object : InnerMockStore {
-        @Suppress("UNCHECKED_CAST")
-        override val originStore: InnerStore<Any> = store as InnerStore<Any>
-        override val value = initValue as Any
-    }
-
-fun <T, R> effect(effect: Effect<T, R>, f: suspend (T) -> R): MockEffect =
-    object : InnerMockEffect {
-        override val originEffect: Effect<*, *> = effect
-
-        @Suppress("UNCHECKED_CAST")
-        override val fn: suspend (Any) -> Any = { f(it as T) as Any }
-
-//        @Suppress("UNCHECKED_CAST")
-//        override val mockEffect: Effect<Any, Any> = Effect.create { f(it as T) as Any }
-    }
-
 fun fork(
     values: List<MockStore> = emptyList(),
     handlers: List<MockEffect> = emptyList(),
@@ -243,13 +239,7 @@ fun fork(
 fun <T> allSettled(event: Event<T>, param: T, scope: Scope) {
     localScope.set(scope)
     try {
-
-        @Suppress("NAME_SHADOWING")
-        (scope as InnerScope).values.forEach { store ->
-            val store = store as InnerMockStore
-            store.originStore.run(store.value)
-        }
-
+        (scope as InnerScope).initialize()
         event(param)
     } finally {
         localScope.remove()
