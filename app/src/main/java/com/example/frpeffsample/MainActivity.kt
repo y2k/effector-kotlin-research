@@ -18,7 +18,7 @@ import com.example.frpeffsample.login.LoginScreen
 import com.example.frpeffsample.navigation.RouterDomain
 import com.example.frpeffsample.todo.compose.TodoList
 import com.example.frpeffsample.ui.theme.FrpEffSampleTheme
-import com.example.frpeffsample.weather.compose.WeatherList
+import com.example.frpeffsample.weather.WeatherList
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {

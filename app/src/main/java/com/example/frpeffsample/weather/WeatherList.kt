@@ -1,4 +1,4 @@
-package com.example.frpeffsample.weather.compose
+package com.example.frpeffsample.weather
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -12,11 +12,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.example.frpeffsample.effector.compose.get
-import com.example.frpeffsample.weather.searchClicked
-import com.example.frpeffsample.weather.storeCityText
-import com.example.frpeffsample.weather.storeGetTempEnabled
-import com.example.frpeffsample.weather.storeTemperature
-import com.example.frpeffsample.weather.textChanged
 
 @Composable
 fun WeatherList() {
@@ -29,18 +24,18 @@ fun WeatherList() {
     ) {
         TextField(
             modifier = Modifier.fillMaxWidth(),
-            value = storeCityText.get(),
-            onValueChange = { textChanged(it) }
+            value = WeatherDomain.storeCityText.get(),
+            onValueChange = { WeatherDomain.textChanged(it) }
         )
         Button(
-            enabled = storeGetTempEnabled.get(),
-            onClick = { searchClicked(Unit) }
+            enabled = WeatherDomain.storeGetTempEnabled.get(),
+            onClick = { WeatherDomain.searchClicked(Unit) }
         ) {
             Text(text = "Get temperature")
         }
         Text(
             modifier = Modifier.fillMaxWidth(),
-            text = storeTemperature.get()
+            text = WeatherDomain.storeTemperature.get()
         )
     }
 }

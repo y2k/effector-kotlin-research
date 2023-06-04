@@ -87,6 +87,7 @@ interface Effect<T, R> : Target<T> {
     val done: Event<R>
     val fail: Event<Exception>
     val finally: Event<Unit>
+    val pending: Store<Boolean>
 
     companion object {
         fun <T, R> create(f: suspend (T) -> R): Effect<T, R> =
@@ -97,6 +98,7 @@ interface Effect<T, R> : Target<T> {
                 override val done = Event.create<R>()
                 override val fail = Event.create<Exception>()
                 override val finally = Event.create<Unit>()
+                override val pending = Store.create(false)
 
                 @OptIn(DelicateCoroutinesApi::class)
                 override fun run(param: T) {
@@ -110,10 +112,12 @@ interface Effect<T, R> : Target<T> {
 
                             println("EFFECTOR: run effect, param: $param")
 
+                            (pending as InnerStore<Boolean>).run(true)
                             done(f2(param))
                         } catch (e: Exception) {
                             fail(e)
                         } finally {
+                            (pending as InnerStore<Boolean>).run(false)
                             finally(Unit)
                         }
                     }

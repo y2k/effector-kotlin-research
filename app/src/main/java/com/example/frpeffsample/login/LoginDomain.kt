@@ -5,30 +5,26 @@ import com.example.frpeffsample.effector.Store
 import com.example.frpeffsample.effector.combine
 import com.example.frpeffsample.effector.on
 import com.example.frpeffsample.effector.sample
-import com.example.frpeffsample.effects.LoginEffects
+import com.example.frpeffsample.effects.Effects
 import com.example.frpeffsample.navigation.RouterDomain
 
 object LoginDomain {
 
-    val loginTextChanged = Event.create<String>()
-    val storeLoginText = Store.create("")
-        .on(loginTextChanged) { _, text -> text }
+    val loginClicked = Event.create<Unit>()
+
+    val loginFx = Effects.loginFx()
+
+    val storeLoginInProgress = Store.create(false)
+        .on(loginClicked) { _, _ -> true }
+        .on(loginFx.finally) { _, _ -> false }
 
     val passwordTextChanged = Event.create<String>()
     val storePasswordText = Store.create("")
         .on(passwordTextChanged) { _, text -> text }
 
-    val loginClicked = Event.create<Unit>()
-
-    val loginFx = LoginEffects.loginFx()
-
-    val storeError = Store.create("")
-        .on(loginFx.fail) { _, error -> error.message ?: "" }
-        .on(loginClicked) { _, _ -> "" }
-
-    val storeLoginInProgress = Store.create(false)
-        .on(loginClicked) { _, _ -> true }
-        .on(loginFx.finally) { _, _ -> false }
+    val loginTextChanged = Event.create<String>()
+    val storeLoginText = Store.create("")
+        .on(loginTextChanged) { _, text -> text }
 
     val storeLoginEnabled = combine(
         storeLoginText,
@@ -37,6 +33,10 @@ object LoginDomain {
     ) { login, password, inProgress ->
         login.isNotBlank() && password.isNotBlank() && !inProgress
     }
+
+    val storeError = Store.create("")
+        .on(loginFx.fail) { _, error -> error.message ?: "" }
+        .on(loginClicked) { _, _ -> "" }
 
     init {
         sample(

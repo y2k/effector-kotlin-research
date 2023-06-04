@@ -4,10 +4,7 @@ import com.example.frpeffsample.effector.Scope
 import com.example.frpeffsample.effector.TestScopeApi
 import com.example.frpeffsample.effector.allSettled
 import com.example.frpeffsample.effector.fork
-import com.example.frpeffsample.weather.apiSearchFx
-import com.example.frpeffsample.weather.searchClicked
-import com.example.frpeffsample.weather.storeCityText
-import com.example.frpeffsample.weather.storeTemperature
+import com.example.frpeffsample.weather.WeatherDomain
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
@@ -27,18 +24,18 @@ class ExampleUnitTest {
         val scope = fork(
             values = listOf(
                 /* Выставление значения стора storeCityText для теста */
-                Scope.store(storeCityText, "Tokyo")
+                Scope.store(WeatherDomain.storeCityText, "Tokyo")
             ),
             handlers = listOf(
                 /* Перегрузка эффекта apiSearchFx на возврат фиксированного значения */
-                Scope.effect(apiSearchFx) { """{ "city": "$it", "temperature": 25 }""" }
+                Scope.effect(WeatherDomain.apiSearchFx) { """{ "city": "$it", "temperature": 25 }""" }
             )
         )
 
         /* Запуск события searchClicked в локальном скоупе и ожидание завершения всех эффектов */
-        allSettled(searchClicked, Unit, scope)
+        allSettled(WeatherDomain.searchClicked, Unit, scope)
 
-        assertEquals("Tokyo: 25", scope.getState(storeTemperature))
+        assertEquals("Tokyo: 25", scope.getState(WeatherDomain.storeTemperature))
     }
 
     @Before
