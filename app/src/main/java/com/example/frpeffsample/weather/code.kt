@@ -39,7 +39,7 @@ val storeTemperature = Store.create("")
     .on(apiSearchFx.fail) { _, _ -> "Error" }
     .reset(textChanged)
 
-fun main() {
+val main = run {
     sample(
         clock = searchClicked,
         source = storeCityText,

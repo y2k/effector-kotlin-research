@@ -4,7 +4,6 @@ import com.example.frpeffsample.effector.Scope
 import com.example.frpeffsample.effector.allSettled
 import com.example.frpeffsample.effector.fork
 import com.example.frpeffsample.weather.apiSearchFx
-import com.example.frpeffsample.weather.main
 import com.example.frpeffsample.weather.searchClicked
 import com.example.frpeffsample.weather.storeCityText
 import com.example.frpeffsample.weather.storeTemperature
@@ -26,7 +25,7 @@ class ExampleUnitTest {
         /* Создание локального скоупа с фейковыми эффектами и предустановлеными значениями сторов */
         val scope = fork(
             values = listOf(
-                /* Ручное обновление значения стора storeCityText (для теста) */
+                /* Выставление значения стора storeCityText для теста */
                 Scope.store(storeCityText, "Tokyo")
             ),
             handlers = listOf(
@@ -44,7 +43,6 @@ class ExampleUnitTest {
     @Before
     fun before() {
         Dispatchers.setMain(UnconfinedTestDispatcher())
-        main()
     }
 
     @After

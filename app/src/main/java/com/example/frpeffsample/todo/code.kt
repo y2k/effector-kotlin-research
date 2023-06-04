@@ -23,7 +23,7 @@ val storeItems = Store.create(emptyList<String>())
     .on(itemAdded) { items, newItem -> items + newItem }
     .on(itemDeleted) { items, position -> items.filterIndexed { i, _ -> i != position } }
 
-fun main() {
+val main = run {
     sample(
         clock = addClicked,
         source = storeText,

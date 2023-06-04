@@ -15,8 +15,6 @@ import androidx.compose.ui.unit.dp
 import com.example.frpeffsample.todo.compose.TodoList
 import com.example.frpeffsample.ui.theme.FrpEffSampleTheme
 import com.example.frpeffsample.weather.compose.WeatherList
-import com.example.frpeffsample.todo.main as todoMain
-import com.example.frpeffsample.weather.main as weatherMain
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -35,9 +33,6 @@ class MainActivity : ComponentActivity() {
                 }
             }
         }
-
-        todoMain()
-        weatherMain()
     }
 }
 
