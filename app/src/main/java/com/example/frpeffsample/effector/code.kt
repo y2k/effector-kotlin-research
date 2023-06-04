@@ -186,6 +186,7 @@ private class InnerScope(
         }
     }
 
+    @TestScopeApi
     override fun <T> getState(store: Store<T>): T {
         initialize()
         return (store as InnerStore).state.value
@@ -195,6 +196,7 @@ private class InnerScope(
 private val localScope = ThreadLocal<Scope>()
 
 interface Scope {
+    @TestScopeApi
     fun <T> getState(store: Store<T>): T
 
     companion object {
@@ -245,5 +247,10 @@ fun <T> allSettled(event: Event<T>, param: T, scope: Scope) {
         localScope.remove()
     }
 }
+
+@Retention(value = AnnotationRetention.BINARY)
+@kotlin.annotation.Target(AnnotationTarget.FUNCTION)
+@RequiresOptIn(level = RequiresOptIn.Level.ERROR)
+annotation class TestScopeApi
 
 // endregion

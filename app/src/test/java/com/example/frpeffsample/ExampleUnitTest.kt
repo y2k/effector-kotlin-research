@@ -1,6 +1,7 @@
 package com.example.frpeffsample
 
 import com.example.frpeffsample.effector.Scope
+import com.example.frpeffsample.effector.TestScopeApi
 import com.example.frpeffsample.effector.allSettled
 import com.example.frpeffsample.effector.fork
 import com.example.frpeffsample.weather.apiSearchFx
@@ -17,7 +18,7 @@ import org.junit.Assert.assertEquals
 import org.junit.Before
 import org.junit.Test
 
-@OptIn(ExperimentalCoroutinesApi::class)
+@OptIn(ExperimentalCoroutinesApi::class, TestScopeApi::class)
 class ExampleUnitTest {
 
     @Test
