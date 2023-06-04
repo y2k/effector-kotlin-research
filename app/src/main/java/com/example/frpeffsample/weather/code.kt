@@ -19,11 +19,10 @@ val searchClicked = Event.create<Unit>()
 
 val storeCityText = Store.create("")
     .on(textChanged) { _, text -> text }
-    .reset(searchClicked)
 
 val storeGetTempEnabled = storeCityText.map { it.length >= 3 }
 
-internal val searchFx = Effect.create<String, String> { city ->
+internal val apiSearchFx = Effect.create<String, String> { city ->
     withContext(Dispatchers.IO) {
         println("Load weather for city: $city")
         URL("https://raw.githubusercontent.com/y2k/effector-kotlin-research/master/mock-weather-response.json")
@@ -33,15 +32,18 @@ internal val searchFx = Effect.create<String, String> { city ->
 
 val storeTemperature = Store.create("")
     .on(searchClicked) { _, _ -> "Loading..." }
-    .on(searchFx.done) { _, text -> Json.decodeFromString<Response>(text).temperature.toString() }
-    .on(searchFx.fail) { _, _ -> "Error" }
+    .on(apiSearchFx.done) { _, text ->
+        val json = Json.decodeFromString<Response>(text)
+        "${json.city}: ${json.temperature}"
+    }
+    .on(apiSearchFx.fail) { _, _ -> "Error" }
     .reset(textChanged)
 
 fun main() {
     sample(
         clock = searchClicked,
         source = storeCityText,
-        target = searchFx,
+        target = apiSearchFx,
     )
 }
 

@@ -29,6 +29,8 @@ interface Store<T> : Target<T> {
                 override val state: MutableStateFlow<T> = MutableStateFlow(initValue)
                 override fun asStateFlow(): StateFlow<T> = state
                 override fun run(param: T) {
+                    println("EFFECTOR: update store, with: $param")
+
                     state.value = param
                 }
             }
@@ -51,7 +53,7 @@ private interface InnerEvent<T> : Event<T>, InnerTarget<T> {
 }
 
 interface Event<T> : Target<T> {
-    operator fun invoke(p: T)
+    operator fun invoke(param: T)
 
     companion object {
         fun <T> create(): Event<T> =
@@ -62,11 +64,13 @@ interface Event<T> : Target<T> {
                 )
 
                 override fun run(param: T) {
-                    value.tryEmit(param)
+                    invoke(param)
                 }
 
-                override fun invoke(p: T) {
-                    value.tryEmit(p)
+                override fun invoke(param: T) {
+                    println("EFFECTOR: run event, param: $param")
+
+                    value.tryEmit(param)
                 }
             }
     }
@@ -85,14 +89,24 @@ interface Effect<T, R> : Target<T> {
         fun <T, R> create(f: suspend (T) -> R): Effect<T, R> =
             object : InnerEffect<T, R> {
 
+                private val key: Effect<*, *> = this
+
                 override val done = Event.create<R>()
                 override val fail = Event.create<Exception>()
 
                 @OptIn(DelicateCoroutinesApi::class)
                 override fun run(param: T) {
-                    GlobalScope.launch(Dispatchers.Main.immediate) {
+                    GlobalScope.launch(Unconfined) {
                         try {
-                            done(f(param))
+                            val handlers = (localScope.get() as InnerScope?)?.handlers
+
+                            @Suppress("UNCHECKED_CAST")
+                            val mf = handlers?.get(key) as? suspend (T) -> R
+                            val f2 = mf ?: f
+
+                            println("EFFECTOR: run effect, param: $param")
+
+                            done(f2(param))
                         } catch (e: Exception) {
                             fail(e)
                         }
@@ -140,15 +154,106 @@ fun <T, TE> Store<T>.on(event: Event<TE>, f: (T, TE) -> T): Store<T> {
 
 @OptIn(DelicateCoroutinesApi::class)
 fun <T> Store<T>.reset(event: Event<*>): Store<T> {
-    val internalStore = this as InnerStore<T>
+    val privateStore = this as InnerStore<T>
     sample(
         source = this,
         clock = event,
         target = Effect.create<Any, Unit> {
             GlobalScope.launch(Dispatchers.Main) {
-                internalStore.state.value = internalStore.initValueProp
+                privateStore.state.value = privateStore.initValueProp
             }
         },
     )
     return this
 }
+
+// region Scope
+
+private class InnerScope(
+    val values: List<MockStore> = emptyList(),
+    val handlers: Map<Effect<*, *>, suspend (Any) -> Any>,
+) : Scope {
+    override fun <T> getState(store: Store<T>): T {
+        return (store as InnerStore).state.value
+    }
+}
+
+private val localScope = ThreadLocal<Scope>()
+
+interface Scope {
+    fun <T> getState(store: Store<T>): T
+
+    companion object {
+        fun <T> store(store: Store<T>, value: T): MockStore =
+            object : InnerMockStore {
+                @Suppress("UNCHECKED_CAST")
+                override val originStore: InnerStore<Any> = store as InnerStore<Any>
+                override val value = value as Any
+            }
+
+        fun <T, R> effect(effect: Effect<T, R>, f: suspend (T) -> R): MockEffect =
+            object : InnerMockEffect {
+                override val originEffect: Effect<*, *> = effect
+
+                @Suppress("UNCHECKED_CAST")
+                override val fn: suspend (Any) -> Any = { f(it as T) as Any }
+            }
+    }
+}
+
+private interface InnerMockEffect : MockEffect {
+    val originEffect: Effect<*, *>
+    val fn: suspend (Any) -> Any
+}
+
+private interface InnerMockStore : MockStore {
+    val originStore: InnerStore<Any>
+    val value: Any
+}
+
+interface MockEffect
+interface MockStore
+
+fun <T> store(store: Store<T>, initValue: T): MockStore =
+    object : InnerMockStore {
+        @Suppress("UNCHECKED_CAST")
+        override val originStore: InnerStore<Any> = store as InnerStore<Any>
+        override val value = initValue as Any
+    }
+
+fun <T, R> effect(effect: Effect<T, R>, f: suspend (T) -> R): MockEffect =
+    object : InnerMockEffect {
+        override val originEffect: Effect<*, *> = effect
+
+        @Suppress("UNCHECKED_CAST")
+        override val fn: suspend (Any) -> Any = { f(it as T) as Any }
+
+//        @Suppress("UNCHECKED_CAST")
+//        override val mockEffect: Effect<Any, Any> = Effect.create { f(it as T) as Any }
+    }
+
+fun fork(
+    values: List<MockStore> = emptyList(),
+    handlers: List<MockEffect> = emptyList(),
+): Scope = InnerScope(
+    values,
+    handlers.map { it as InnerMockEffect }.associate { it.originEffect to it.fn }
+)
+
+fun <T> allSettled(event: Event<T>, param: T, scope: Scope) {
+    localScope.set(scope)
+    try {
+
+        @Suppress("NAME_SHADOWING")
+        (scope as InnerScope).values.forEach { store ->
+            val store = store as InnerMockStore
+            store.originStore.run(store.value)
+        }
+
+        event(param)
+    } finally {
+        localScope.remove()
+    }
+}
+
+// endregion
