@@ -41,9 +41,7 @@ class ExampleUnitTest {
     }
 
     @Before
-    fun before() {
-        Dispatchers.setMain(UnconfinedTestDispatcher())
-    }
+    fun before() = Dispatchers.setMain(UnconfinedTestDispatcher())
 
     @After
     fun after() = Dispatchers.resetMain()
