@@ -4,7 +4,8 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
@@ -17,6 +18,7 @@ import androidx.compose.ui.unit.dp
 import com.example.frpeffsample.effector.compose.get
 import com.example.frpeffsample.login.LoginScreen
 import com.example.frpeffsample.navigation.RouterDomain
+import com.example.frpeffsample.sodium.compose.SignalsTodoListCompose
 import com.example.frpeffsample.todo.compose.TodoList
 import com.example.frpeffsample.ui.theme.FrpEffSampleTheme
 import com.example.frpeffsample.weather.WeatherList
@@ -27,13 +29,16 @@ class MainActivity : ComponentActivity() {
 
         setContent {
             FrpEffSampleTheme {
-                Box(
+                Column(
                     modifier = Modifier
                         .fillMaxSize()
                         .verticalScroll(rememberScrollState())
                         .background(MaterialTheme.colorScheme.background)
-                        .padding(vertical = 8.dp)
+                        .padding(vertical = 8.dp),
+                    verticalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
+                    SignalsTodoListCompose()
+
                     when (RouterDomain.storeCurrentScreen.get()) {
                         RouterDomain.Screen.Login -> LoginScreen()
                         RouterDomain.Screen.Weather -> WeatherList()
